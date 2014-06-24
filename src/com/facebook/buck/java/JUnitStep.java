@@ -48,10 +48,14 @@ public class JUnitStep extends ShellStep {
   @VisibleForTesting
   public static final String BUILD_ID_PROPERTY = "com.facebook.buck.buildId";
 
+  @VisibleForTesting
+  public static final String MODULE_PATH_PROPERTY = "com.facebook.buck.modulePath";
+
   private final ImmutableSet<Path> classpathEntries;
   private final Set<String> testClassNames;
   private final List<String> vmArgs;
   private final Path directoryForTestResults;
+  private final Path modulePath;
   private final Path tmpDirectory;
   private final Path testRunnerClassesDirectory;
   private final boolean isCodeCoverageEnabled;
@@ -90,6 +94,7 @@ public class JUnitStep extends ShellStep {
       Set<String> testClassNames,
       List<String> vmArgs,
       Path directoryForTestResults,
+      Path modulePath,
       Path tmpDirectory,
       boolean isCodeCoverageEnabled,
       boolean isDebugEnabled,
@@ -101,6 +106,7 @@ public class JUnitStep extends ShellStep {
         testClassNames,
         vmArgs,
         directoryForTestResults,
+        modulePath,
         tmpDirectory,
         isCodeCoverageEnabled,
         isDebugEnabled,
@@ -119,6 +125,7 @@ public class JUnitStep extends ShellStep {
       Set<String> testClassNames,
       List<String> vmArgs,
       Path directoryForTestResults,
+      Path modulePath,
       Path tmpDirectory,
       boolean isCodeCoverageEnabled,
       boolean isDebugEnabled,
@@ -130,6 +137,7 @@ public class JUnitStep extends ShellStep {
     this.classpathEntries = ImmutableSet.copyOf(classpathEntries);
     this.testClassNames = ImmutableSet.copyOf(testClassNames);
     this.vmArgs = ImmutableList.copyOf(vmArgs);
+    this.modulePath = Preconditions.checkNotNull(modulePath);
     this.directoryForTestResults = Preconditions.checkNotNull(directoryForTestResults);
     this.tmpDirectory = Preconditions.checkNotNull(tmpDirectory);
     this.isCodeCoverageEnabled = isCodeCoverageEnabled;
@@ -161,6 +169,9 @@ public class JUnitStep extends ShellStep {
 
     // Include the buildId
     args.add(String.format("-D%s=%s", BUILD_ID_PROPERTY, buildId));
+
+    // Include the baseDir
+    args.add(String.format("-D%s=%s", MODULE_PATH_PROPERTY, modulePath));
 
     if (isDebugEnabled) {
       // This is the default config used by IntelliJ. By doing this, all a user

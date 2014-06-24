@@ -56,6 +56,9 @@ public class JUnitStepTest {
     BuildId pretendBuildId = new BuildId("pretend-build-id");
     String buildIdArg = String.format("-D%s=%s", JUnitStep.BUILD_ID_PROPERTY, pretendBuildId);
 
+    Path modulePath = Paths.get("module/submodule");
+    String modulePathArg = String.format("-D%s=%s", JUnitStep.MODULE_PATH_PROPERTY, modulePath);
+
     Path directoryForTestResults = Paths.get("buck-out/gen/theresults/");
     Path directoryForTemp = Paths.get("buck-out/gen/thetmp/");
     boolean isCodeCoverageEnabled = false;
@@ -67,6 +70,7 @@ public class JUnitStepTest {
         testClassNames,
         vmArgs,
         directoryForTestResults,
+        modulePath,
         directoryForTemp,
         isCodeCoverageEnabled,
         isDebugEnabled,
@@ -87,6 +91,7 @@ public class JUnitStepTest {
             "java",
             "-Djava.io.tmpdir=" + directoryForTemp,
             buildIdArg,
+            modulePathArg,
             vmArg1,
             vmArg2,
             "-verbose",
@@ -121,6 +126,9 @@ public class JUnitStepTest {
     BuildId pretendBuildId = new BuildId("pretend-build-id");
     String buildIdArg = String.format("-D%s=%s", JUnitStep.BUILD_ID_PROPERTY, pretendBuildId);
 
+    Path modulePath = Paths.get("module/submodule");
+    String modulePathArg = String.format("-D%s=%s", JUnitStep.MODULE_PATH_PROPERTY, modulePath);
+
     Path directoryForTestResults = Paths.get("buck-out/gen/theresults/");
     Path directoryForTemp = Paths.get("buck-out/gen/thetmp/");
     boolean isCodeCoverageEnabled = false;
@@ -132,6 +140,7 @@ public class JUnitStepTest {
         testClassNames,
         vmArgs,
         directoryForTestResults,
+        modulePath,
         directoryForTemp,
         isCodeCoverageEnabled,
         isDebugEnabled,
@@ -155,6 +164,7 @@ public class JUnitStepTest {
             "java",
             "-Djava.io.tmpdir=" + directoryForTemp,
             buildIdArg,
+            modulePathArg,
             "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005",
             vmArg1,
             vmArg2,
