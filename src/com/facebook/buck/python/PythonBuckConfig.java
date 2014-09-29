@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
 
 public class PythonBuckConfig {
   private static final Pattern PYTHON_VERSION_REGEX =
-        Pattern.compile(".*?(\\wython \\d+\\.\\d+).*");
+      Pattern.compile(".*?(\\wy(thon|run) \\d+\\.\\d+).*");
 
   private final BuckConfig delegate;
 
@@ -52,8 +52,8 @@ public class PythonBuckConfig {
       throws InterruptedException {
     try {
       ProcessExecutor.Result versionResult = processExecutor.execute(
-          Runtime.getRuntime().exec(pythonPath + " --version"),
-          EnumSet.of(ProcessExecutor.Option.EXPECTING_STD_ERR),
+          Runtime.getRuntime().exec(pythonPath + " -V"),
+          EnumSet.of(ProcessExecutor.Option.EXPECTING_STD_ERR, ProcessExecutor.Option.EXPECTING_STD_OUT),
           Optional.<String>absent());
       return extractPythonVersion(pythonPath, versionResult);
     } catch (IOException e) {
@@ -66,11 +66,13 @@ public class PythonBuckConfig {
       Path pythonPath,
       ProcessExecutor.Result versionResult) {
     if (versionResult.getExitCode() == 0) {
-      String versionString = CharMatcher.WHITESPACE.trimFrom(versionResult.getStderr().get());
+      String versionString = CharMatcher.WHITESPACE.trimFrom(
+          CharMatcher.WHITESPACE.trimFrom(versionResult.getStderr().get()) +
+          CharMatcher.WHITESPACE.trimFrom(versionResult.getStdout().get()).replaceAll("\u001B\\[[;\\d]*m", ""));
       Matcher matcher = PYTHON_VERSION_REGEX.matcher(versionString);
       if (!matcher.matches()) {
         throw new HumanReadableException(
-            "`%s --version` returned an invalid version string %s",
+            "`%s -V` returned an invalid version string %s",
             pythonPath,
             versionString);
       }
