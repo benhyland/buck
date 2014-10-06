@@ -52,7 +52,6 @@ public class AndroidLibraryBuilder extends AbstractNodeBuilder<AndroidLibraryDes
   }
 
   public AndroidLibraryBuilder addDep(BuildTarget rule) {
-    arg.deps = amend(arg.deps, rule);
     return this;
   }
 
