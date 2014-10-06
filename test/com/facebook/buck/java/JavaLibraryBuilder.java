@@ -40,7 +40,6 @@ public class JavaLibraryBuilder extends AbstractNodeBuilder<JavaLibraryDescripti
   }
 
   public JavaLibraryBuilder addDep(BuildTarget rule) {
-    arg.deps = amend(arg.deps, rule);
     return this;
   }
 
