@@ -111,6 +111,7 @@ public class GroovyTest extends GroovyLibrary implements TestRule {
         testClassNames,
         vmArgs,
         pathToTestOutput,
+        getBuildTarget().getBasePath(),
         tmpDirectory,
         executionContext.isCodeCoverageEnabled(),
         executionContext.isDebugEnabled(),
