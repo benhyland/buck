@@ -46,7 +46,7 @@ public class DryRunSpockTest {
 
   @Test
   public void testShouldPass() throws IOException {
-    ProjectWorkspace.ProcessResult result = workspace.runBuckCommand("test", "--debug", "--all");
+    ProjectWorkspace.ProcessResult result = workspace.runBuckCommand("test", "--all");
     result.assertSuccess();
     assertThat(result.getStderr(),
         containsString("1 Passed   0 Skipped   0 Failed   com.example.SimpleSpec"));
