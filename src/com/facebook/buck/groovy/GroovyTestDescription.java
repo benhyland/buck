@@ -41,6 +41,7 @@ public class GroovyTestDescription implements Description<GroovyTestDescription.
         GroovyLibraryDescription.validateResources(args, params.getProjectFilesystem()),
         args.vmArgs.get(),
         args.labels.get(),
+        args.contacts.get(),
         validateAndGetSourcesUnderTest(
             args.sourceUnderTest.get(),
             params.getBuildTarget(),
@@ -78,6 +79,7 @@ public class GroovyTestDescription implements Description<GroovyTestDescription.
 
   @SuppressFieldNotInitialized
   public static class Arg extends GroovyLibraryDescription.Arg {
+    public Optional<ImmutableSortedSet<String>> contacts;
     public Optional<ImmutableSortedSet<BuildTarget>> sourceUnderTest;
     public Optional<ImmutableList<String>> vmArgs;
     public Optional<ImmutableSortedSet<Label>> labels;

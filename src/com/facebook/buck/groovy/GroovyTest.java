@@ -14,7 +14,10 @@ import com.facebook.buck.step.ExecutionContext;
 import com.facebook.buck.step.Step;
 import com.facebook.buck.step.fs.MakeCleanDirectoryStep;
 import com.facebook.buck.test.TestCaseSummary;
+import com.facebook.buck.test.TestResultSummary;
 import com.facebook.buck.test.TestResults;
+import com.facebook.buck.test.XmlTestResultParser;
+import com.facebook.buck.test.result.type.ResultType;
 import com.facebook.buck.test.selectors.TestSelectorList;
 import com.facebook.buck.util.BuckConstant;
 import com.facebook.buck.util.ProjectFilesystem;
@@ -44,7 +47,8 @@ import javax.annotation.Nullable;
 public class GroovyTest extends GroovyLibrary implements TestRule {
 
   private final ImmutableList<String> vmArgs;
-  private final ImmutableSortedSet<Label> labels;
+  private final ImmutableSet<Label> labels;
+  private final ImmutableSet<String> contacts;
   private final ImmutableSet<BuildRule> sourceUnderTest;
   private CompiledClassFileFinder compiledClassFileFinder;
 
@@ -53,7 +57,8 @@ public class GroovyTest extends GroovyLibrary implements TestRule {
       ImmutableSortedSet<SourcePath> srcs,
       ImmutableSortedSet<SourcePath> resources,
       List<String> vmArgs,
-      ImmutableSortedSet<Label> labels,
+      Set<Label> labels,
+      Set<String> contacts,
       ImmutableSet<BuildRule> sourceUnderTest,
       Optional<Path> resourcesRoot
   ) {
@@ -64,8 +69,8 @@ public class GroovyTest extends GroovyLibrary implements TestRule {
         /* exportDeps */ ImmutableSortedSet.<BuildRule>of(),
         /* providedDeps */ ImmutableSortedSet.<BuildRule>of(),
         resourcesRoot);
-    this.labels = labels;
-
+    this.labels = ImmutableSet.copyOf(labels);
+    this.contacts = ImmutableSet.copyOf(contacts);
     this.vmArgs = ImmutableList.copyOf(vmArgs);
     this.sourceUnderTest = Preconditions.checkNotNull(sourceUnderTest);
   }
@@ -130,12 +135,52 @@ public class GroovyTest extends GroovyLibrary implements TestRule {
 
   @Override
   public Callable<TestResults> interpretTestResults(
-      ExecutionContext executionContext, boolean isUsingTestSelectors, boolean isDryRun) {
+      final ExecutionContext context,
+      final boolean isUsingTestSelectors,
+      final boolean isDryRun) {
+    final ImmutableSet<String> contacts = getContacts();
     return new Callable<TestResults>() {
+
       @Override
       public TestResults call() throws Exception {
-        return new TestResults(ImmutableList.<TestCaseSummary>of());
+        // It is possible that this rule was not responsible for running any tests because all tests
+        // were run by its deps. In this case, return an empty TestResults.
+        Set<String> testClassNames = getClassNamesForSources(context);
+        if (testClassNames.isEmpty()) {
+          return new TestResults(getBuildTarget(), ImmutableList.<TestCaseSummary>of(), contacts);
+        }
+
+        List<TestCaseSummary> summaries = Lists.newArrayListWithCapacity(testClassNames.size());
+        ProjectFilesystem filesystem = context.getProjectFilesystem();
+        for (String testClass : testClassNames) {
+          String testSelectorSuffix = "";
+          if (isUsingTestSelectors) {
+            testSelectorSuffix += ".test_selectors";
+          }
+          if (isDryRun) {
+            testSelectorSuffix += ".dry_run";
+          }
+          String path = String.format("%s%s.xml", testClass, testSelectorSuffix);
+          File testResultFile = filesystem.getFileForRelativePath(
+              getPathToTestOutputDirectory().resolve(path));
+          if (!isUsingTestSelectors && !testResultFile.isFile()) {
+            summaries.add(
+                getTestClassFailedSummary(
+                    testClass,
+                    "test exited before generating results file"));
+            // Not having a test result file at all (which only happens when we are using test
+            // selectors) is interpreted as meaning a test didn't run at all, so we'll completely
+            // ignore it.  This is another result of the fact that JUnit is the only thing that can
+            // definitively say whether or not a class should be run.  It's not possible, for example,
+            // to filter testClassNames here at the buck end.
+          } else if (testResultFile.isFile()) {
+            summaries.add(XmlTestResultParser.parse(testResultFile));
+          }
+        }
+
+        return new TestResults(getBuildTarget(), summaries, contacts);
       }
+
     };
   }
 
@@ -146,7 +191,7 @@ public class GroovyTest extends GroovyLibrary implements TestRule {
 
   @Override
   public ImmutableSet<String> getContacts() {
-    return null;
+    return contacts;
   }
 
   @Override
@@ -296,6 +341,24 @@ public class GroovyTest extends GroovyLibrary implements TestRule {
    */
   protected Set<Path> getBootClasspathEntries(ExecutionContext context) {
     return ImmutableSet.of();
+  }
+
+  /**
+   * @return a test case result, named "main", signifying a failure of the entire test class.
+   */
+  private TestCaseSummary getTestClassFailedSummary(String testClass, String message) {
+    return new TestCaseSummary(
+        testClass,
+        ImmutableList.of(
+            new TestResultSummary(
+                testClass,
+                "main",
+                ResultType.FAILURE,
+                0L,
+                message,
+                "",
+                "",
+                "")));
   }
 
 }
