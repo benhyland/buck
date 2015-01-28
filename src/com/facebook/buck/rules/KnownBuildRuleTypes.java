@@ -20,6 +20,7 @@ import com.facebook.buck.android.AndroidAarDescription;
 import com.facebook.buck.android.AndroidBinary;
 import com.facebook.buck.android.AndroidBinaryDescription;
 import com.facebook.buck.android.AndroidBuildConfigDescription;
+import com.facebook.buck.android.AndroidDirectoryResolver;
 import com.facebook.buck.android.AndroidInstrumentationApkDescription;
 import com.facebook.buck.android.AndroidLibraryDescription;
 import com.facebook.buck.android.AndroidManifestDescription;
@@ -63,6 +64,8 @@ import com.facebook.buck.file.Downloader;
 import com.facebook.buck.file.ExplodingDownloader;
 import com.facebook.buck.file.HttpDownloader;
 import com.facebook.buck.file.RemoteFileDescription;
+import com.facebook.buck.groovy.GroovyLibraryDescription;
+import com.facebook.buck.groovy.GroovyTestDescription;
 import com.facebook.buck.gwt.GwtBinaryDescription;
 import com.facebook.buck.java.JavaBinaryDescription;
 import com.facebook.buck.java.JavaBuckConfig;
@@ -93,7 +96,6 @@ import com.facebook.buck.thrift.ThriftCxxEnhancer;
 import com.facebook.buck.thrift.ThriftJavaEnhancer;
 import com.facebook.buck.thrift.ThriftLibraryDescription;
 import com.facebook.buck.thrift.ThriftPythonEnhancer;
-import com.facebook.buck.android.AndroidDirectoryResolver;
 import com.facebook.buck.util.HumanReadableException;
 import com.facebook.buck.util.ProcessExecutor;
 import com.facebook.buck.util.environment.Platform;
@@ -388,7 +390,8 @@ public class KnownBuildRuleTypes {
             proGuardConfig,
             ndkCxxPlatforms));
     builder.register(new AndroidBuildConfigDescription(androidBinaryOptions));
-    builder.register(new AndroidInstrumentationApkDescription(
+    builder.register(
+        new AndroidInstrumentationApkDescription(
             proGuardConfig,
             androidBinaryOptions,
             ndkCxxPlatforms));
@@ -442,7 +445,8 @@ public class KnownBuildRuleTypes {
             defaultCxxPlatform,
             cxxPlatforms));
     builder.register(new RemoteFileDescription(downloader));
-    builder.register(new RobolectricTestDescription(
+    builder.register(
+        new RobolectricTestDescription(
             androidBinaryOptions,
             testRuleTimeoutMs));
     builder.register(new ShBinaryDescription());
@@ -466,6 +470,8 @@ public class KnownBuildRuleTypes {
                 new ThriftPythonEnhancer(thriftBuckConfig, ThriftPythonEnhancer.Type.TWISTED))));
     builder.register(new XcodeProjectConfigDescription());
     builder.register(new XcodeWorkspaceConfigDescription());
+    builder.register(new GroovyLibraryDescription());
+    builder.register(new GroovyTestDescription(testRuleTimeoutMs));
 
     return builder;
   }
