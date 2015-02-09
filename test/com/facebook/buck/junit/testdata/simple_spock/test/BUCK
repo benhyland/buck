@@ -1,6 +1,6 @@
 groovy_library(
   name = 'groovy-main',
-  srcs = glob(['SimpleMain.groovy'])
+  srcs = glob(['SimpleGroovyMain.groovy', 'SimpleJavaMain.java'])
 )
 
 groovy_test(

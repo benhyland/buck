@@ -161,7 +161,7 @@ public class ExternalGroovycStep extends GroovycStep {
     // Add sources file or sources list to command
     ImmutableList.Builder<Path> sources = ImmutableList.builder();
     for (Path path : groovySourceFilePaths) {
-      if (path.toString().endsWith(".groovy")) {
+      if (path.toString().endsWith(".groovy") || path.toString().endsWith(".java")) {
         sources.add(path);
       } else if (path.toString().endsWith(SRC_ZIP)) {
         if (!workingDirectory.isPresent()) {

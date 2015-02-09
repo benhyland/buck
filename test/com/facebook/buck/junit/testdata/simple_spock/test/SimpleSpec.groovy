@@ -16,14 +16,14 @@
 
 package com.example
 
-import com.facebook.buck.junit.testdata.simple_spock.test.SimpleMain
+import com.facebook.buck.junit.testdata.simple_spock.test.SimpleGroovyMain
 import spock.lang.Specification
 import spock.lang.Subject
 
 class SimpleSpec extends Specification {
 
     @Subject
-    SimpleMain sut = new SimpleMain();
+    SimpleGroovyMain sut = new SimpleGroovyMain();
 
     def 'a simple passing test'()
     {
