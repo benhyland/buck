@@ -99,6 +99,9 @@ public class ExternalGroovycStep extends GroovycStep {
       throws InterruptedException {
     ImmutableList.Builder<String> command = ImmutableList.builder();
     command.add(pathToGroovyc.toString());
+    command.add("-j");
+    command.add("-Jtarget=1.8");
+    command.add("-Jsource=1.8");
     command.addAll(getOptions(context, buildClasspathEntries));
 
     ImmutableList<Path> expandedSources;
